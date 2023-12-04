@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from PIL import Image
 import numpy as np
 from ultralytics import YOLO
@@ -6,13 +6,14 @@ from ultralytics.engine.results import Boxes
 from io import BytesIO
 import base64
 import cv2
+import os
 
 app = Flask(__name__)
 
 UPLOAD_FOLDER = './react_images'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-model = YOLO('models/weights/best.pt')
+model = YOLO('backend/models/weights/best.pt')
 
 def get_image_from_path(path):
     img = cv2.imread(path)
@@ -22,7 +23,7 @@ def disp_results(results):
     for r in results:
         im_array = r.plot()  # plot a BGR numpy array of predictions
         im = Image.fromarray(im_array[..., ::-1])  # RGB PIL image
-        im.save('results.jpg')  # save image
+        im.save(os.path.join('backend/react_images', 'result.jpg'))  # save image
 
 def remove_edges(results):
     for r in results:
@@ -62,31 +63,23 @@ def test():
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        if 'file' not in request.files:
-            raise ValueError("Missing 'file' in form data", request.files)
-        img_path = request.files['file']
+        if 'image' not in request.form:
+            raise ValueError("Missing 'image' in form data", request.form)
+        image_data = request.form.get('image')
+        image_data = image_data.split(',')[1]
+        image_data = base64.b64decode(image_data)
 
-        # img = cv2.imread(img_path)
+        with open(os.path.join('backend/react_images', 'image.jpg'), 'wb') as f:
+            f.write(image_data)
 
-        # img = get_image_from_path(path=img_path)
-        # print("Predicting image")
-        # results = model(img)
-        # results = remove_edges(results)
+        img = get_image_from_path(os.path.join('backend/react_images', 'image.jpg'))
+        results = model(img)
+        results = remove_edges(results)
+        disp_results(results)
 
-        # results_img = disp_results(results)
+        processed_image_path = os.path.join('backend/react_images', 'result.jpg')
 
-        # # Encode the results image as a base64 string
-        # results_img_buffer = BytesIO()
-        # results_img.save(results_img_buffer, format='JPEG')
-        # results_img_base64 = base64.b64encode(results_img_buffer.getvalue()).decode('utf-8')
-
-        return jsonify({
-            "status": "success",
-            "message": "Prediction successful",
-            # "results_image": results_img_base64,
-            "img_path": f"{img_path}",
-            # "img": img,
-        })
+        return send_file(processed_image_path, mimetype='image/jpeg')
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 

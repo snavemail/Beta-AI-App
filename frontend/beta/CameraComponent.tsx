@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Image, Modal, StyleSheet, SafeAreaView } from 'react-native';
 import { Button } from 'react-native-paper';
 import { Camera } from 'expo-camera';
+import * as FileSystem from 'expo-file-system';
 
 function CameraComponent() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -23,35 +24,33 @@ function CameraComponent() {
     }
 
     const { uri } = await cameraRef.current.takePictureAsync();
-    console.log('uri', uri)
-    const localUri = await fetch(uri);
-    console.log('localuri', localUri);
-    const blob = await localUri.blob();
-    console.log('blob', blob)
-
-    const formData = new FormData();
-
-    formData.append('file', blob, 'photo.jpg');
-
-    fetch('http://10.110.228.58:3000/predict', {
-      method: 'POST',
-      body: formData,
-      headers: { 'Content-Type': 'multipart/form-data', },
-    })
-      .then(response => response.json())
+    const file = await fetch(uri);
+    const blob = await file.blob();
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result;
+      const formData = new FormData();
+      formData.append('image', base64 as string);
+  
+      fetch('http://10.110.228.58:3000/predict', {
+        method: 'POST',
+        body: formData,
+        headers: { 'Content-Type': 'multipart/form-data', },
+      })
+      .then(response => response.blob())
       .then(data => {
         console.log('Server Response:', data);
-        // const resultsImage = `data:image/jpeg;base64,${data.results_image}`;
-        setResponse(data.img_path);
-        // setImage(resultsImage);
-        
-        // setResultsImage(resultsImage);
+        setResponse("OK");
+        const imageUrl = URL.createObjectURL(data);
+        setImage(imageUrl);
       })
       .catch(error => {
         console.error('Error sending image to server:', error);
         setResponse(uri);
         setImage(uri);
       });
+    };
+    reader.readAsDataURL(blob);
   };
 
   if (hasPermission === null) {
@@ -96,23 +95,3 @@ const styles = StyleSheet.create({
 
 
 export default CameraComponent;
-
-
-    /*
-    const testFormData = new FormData();
-    testFormData.append
-    testFormData.append('dummy_data', 'some_random_text');
-
-    fetch('http://10.0.0.184:3000/test', {
-      method: 'POST',
-      body: testFormData,
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-    .then(response => response.json())
-    .then(data => {
-      setResponse(data.message);
-    })
-    .catch(error => {
-      console.error('dummy data', error);
-    });
-    */
