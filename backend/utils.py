@@ -4,15 +4,15 @@ from ultralytics.engine.results import Boxes
 import cv2
 import os
 
-def get_image_from_path(path):
+def get_image(path):
     img = cv2.imread(path)
     return img
 
-def disp_results(results):
+def disp_results(results, folder):
     for r in results:
         im_array = r.plot()  # plot a BGR numpy array of predictions
         im = Image.fromarray(im_array[..., ::-1])  # RGB PIL image
-        im.save(os.path.join('backend/react_images', 'result.jpg'))  # save image
+        im.save(os.path.join(f'backend/react_images/{folder}', 'result.jpg'))  # save image
 
 def remove_edges(results):
     for r in results:
