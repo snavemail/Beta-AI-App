@@ -10,7 +10,9 @@ function CameraComponent() {
   const [response, setResponse] = useState<string | null>(null);
   const cameraRef = useRef<Camera | null>(null);
 
-  const downloadUrl = 'http://10.110.228.58:3000/predict';
+  const address = '10.0.0.184'
+
+  const downloadUrl = `http://${address}:3000/predict`;
   const destination = FileSystem.documentDirectory + 'return.jpg';
 
   useEffect(() => {
@@ -35,7 +37,7 @@ function CameraComponent() {
       const formData = new FormData();
       formData.append('image', base64 as string);
   
-      fetch('http://10.110.228.58:3000/predict', {
+      fetch(`http://${address}:3000/predict`, {
         method: 'POST',
         body: formData,
         headers: { 'Content-Type': "image/jpeg", },
@@ -44,18 +46,11 @@ function CameraComponent() {
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        // console.log('response: ' + response.blob());
-        return response.blob();
-      })
-      
-      .then(async (result) => {
-        console.log('Blob:', result.type);
-
-        // Assuming you want to display the processed image directly
-        console.log('result', result);
-        const uri = URL.createObjectURL(result)
-        console.log('uri', uri)
-        setImage(uri);
+        console.log(response)
+        const timestamp = Date.now();
+        const url = `http://${address}:3000/get-image?timestamp=${timestamp}`
+        console.log(url)
+        setImage(url)
       })
       .catch(error => {
         console.error('Error sending image to server:', error);

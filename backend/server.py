@@ -77,12 +77,15 @@ def predict():
         results = remove_edges(results)
         disp_results(results)
 
-        processed_image_path = os.path.join('backend/react_images', 'result.jpg')
-        return Response(processed_image_path, mimetype="image/jpeg")
-
-        # return jsonify({"processed_image_path": processed_image_path})
+        processed_image_path = os.path.join('react_images', 'result.jpg')
+        return send_file(processed_image_path, mimetype="image/jpeg")
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
+
+@app.route('/get-image', methods=['GET'])
+def get_image():
+    processed_image_path = os.path.join('react_images', 'result.jpg')
+    return send_file(processed_image_path, mimetype="image/jpeg")
 
 @app.route('/')
 def hello():
