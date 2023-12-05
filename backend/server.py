@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, Response
 from PIL import Image
 import numpy as np
 from ultralytics import YOLO
@@ -78,8 +78,9 @@ def predict():
         disp_results(results)
 
         processed_image_path = os.path.join('backend/react_images', 'result.jpg')
+        return Response(processed_image_path, mimetype="image/jpeg")
 
-        return send_file(processed_image_path, mimetype='image/jpeg')
+        # return jsonify({"processed_image_path": processed_image_path})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 

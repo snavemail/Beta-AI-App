@@ -10,6 +10,9 @@ function CameraComponent() {
   const [response, setResponse] = useState<string | null>(null);
   const cameraRef = useRef<Camera | null>(null);
 
+  const downloadUrl = 'http://10.110.228.58:3000/predict';
+  const destination = FileSystem.documentDirectory + 'return.jpg';
+
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -35,18 +38,27 @@ function CameraComponent() {
       fetch('http://10.110.228.58:3000/predict', {
         method: 'POST',
         body: formData,
-        headers: { 'Content-Type': 'multipart/form-data', },
+        headers: { 'Content-Type': "image/jpeg", },
       })
-      .then(response => response.blob())
-      .then(data => {
-        console.log('Server Response:', data);
-        setResponse("OK");
-        const imageUrl = URL.createObjectURL(data);
-        setImage(imageUrl);
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        // console.log('response: ' + response.blob());
+        return response.blob();
+      })
+      
+      .then(async (result) => {
+        console.log('Blob:', result.type);
+
+        // Assuming you want to display the processed image directly
+        console.log('result', result);
+        const uri = URL.createObjectURL(result)
+        console.log('uri', uri)
+        setImage(uri);
       })
       .catch(error => {
         console.error('Error sending image to server:', error);
-        setResponse(uri);
         setImage(uri);
       });
     };
