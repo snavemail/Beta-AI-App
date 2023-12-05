@@ -4,22 +4,33 @@ import { IconButton, MD3Colors } from 'react-native-paper';
 import { Camera } from 'expo-camera';
 import { TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { PinchGestureHandler } from 'react-native-gesture-handler';
 
-function CameraComponent() {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+/**
+ * Asks for camera and image library access
+ * Renders a camera view if there is no image selected, then if either
+ * image is taken or selected, it runs the image through a model through a flask server.
+ * @returns A ui for the camera component
+ */
+export default function CameraComponent() {
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
   const cameraRef = useRef<Camera | null>(null);
-  const address = '10.0.0.184'
+  const address = '10.110.228.58'
 
+  /**
+   * Request access for camera
+   */
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === 'granted');
+      setHasCameraPermission(status === 'granted');
     })();
   }, []);
 
+  /**
+   * Request media library access for user's image library
+   */
   useEffect(() => {
     (async () => {
       if (Platform.OS !== 'web') {
@@ -31,14 +42,23 @@ function CameraComponent() {
     })();
   }, []);
 
-  if (hasPermission === null) {
+  // TODO: Change ui
+  if (hasCameraPermission === null) {
     return <View><Text>Requesting camera permission...</Text></View>;
   }
 
-  if (hasPermission === false) {
+  // TODO: Change ui
+  if (hasCameraPermission === false) {
     return <View><Text>No access to camera</Text></View>;
   }
 
+  /**
+   * Sends a fetch request to post the current image 
+   * Image is processed by the current uri, either from taking a photo
+   * or choosing a photo
+   * Then calls get request to receive the resulting image
+   * @param uri this is the uri that is used for the image source
+   */
   const processImage = async (uri: any) => {
     const file = await fetch(uri);
     const blob = await file.blob();
@@ -156,5 +176,3 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 });
-
-export default CameraComponent;
