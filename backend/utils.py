@@ -33,3 +33,14 @@ def remove_edges(results):
         r.boxes = new_boxes
     return results
 
+# Displays the results of model(image)
+def get_difficulty(results):
+    for r in results:
+        guesses = r.probs.data
+        if guesses[0] == max(guesses):
+            return "bolt"
+        if guesses[8] == max(guesses):
+            return "tag"
+        aggregate = (8 * guesses[1] + 5 * guesses[2] + 4 * guesses[3] + 9 * guesses[4] + 
+                     1 * guesses[5] + 7 * guesses[6] + 6 * guesses[7] + 10 * guesses[9] + 3 * guesses[10] + 2 * guesses[11]) 
+        return float(aggregate)
