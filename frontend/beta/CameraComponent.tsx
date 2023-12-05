@@ -1,19 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Image, Modal, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, Image, StyleSheet, Platform } from 'react-native';
 import { Button } from 'react-native-paper';
 import { Camera } from 'expo-camera';
-import * as FileSystem from 'expo-file-system';
+import { TouchableOpacity } from 'react-native';
 
 function CameraComponent() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [image, setImage] = useState<string | null>(null);
-  const [response, setResponse] = useState<string | null>(null);
   const cameraRef = useRef<Camera | null>(null);
-
   const address = '10.0.0.184'
 
-  const downloadUrl = `http://${address}:3000/predict`;
-  const destination = FileSystem.documentDirectory + 'return.jpg';
+  if (hasPermission === null) {
+    return <View><Text>Requesting camera permission...</Text></View>;
+  }
+
+  if (hasPermission === false) {
+    return <View><Text>No access to camera</Text></View>;
+  }
 
   useEffect(() => {
     (async () => {
@@ -21,6 +24,7 @@ function CameraComponent() {
       setHasPermission(status === 'granted');
     })();
   }, []);
+
 
   const takePicture = async () => {
     if (!cameraRef.current) {
@@ -46,10 +50,8 @@ function CameraComponent() {
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        console.log(response)
         const timestamp = Date.now();
         const url = `http://${address}:3000/get-image?timestamp=${timestamp}`
-        console.log(url)
         setImage(url)
       })
       .catch(error => {
@@ -60,45 +62,49 @@ function CameraComponent() {
     reader.readAsDataURL(blob);
   };
 
-  if (hasPermission === null) {
-    return <View><Text>Requesting camera permission...</Text></View>;
+  const retakePicture = () => {
+    setImage(null);
+  };
+  
+  const pickImage = () => {
+
   }
 
-  if (hasPermission === false) {
-    return <View><Text>No access to camera</Text></View>;
-  }
 
   return (
     <View style={{ flex: 1 }}>
-        <Camera
-          ref={(ref) => (cameraRef.current = ref)}
-          style={{ flex: 1 }}
-        >
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: 'transparent',
-              flexDirection: 'row',
-            }}
-          >
-
+      {image ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} />
+          <TouchableOpacity onPress={retakePicture} style={styles.retakeButton}>
+            <Text style={{ color: 'white', fontSize: 20 }}>Retake</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        // Display the camera for taking a new picture
+        <Camera ref={(ref) => (cameraRef.current = ref)} style={{ flex: 1 }}>
+          <View style={{ flex: 1, backgroundColor: 'transparent', flexDirection: 'row' }}>
           </View>
-          <Button icon={'camera'} onPress={takePicture} style={{'marginBottom': 40}}>Pic</Button>
+          <Button icon={'camera'} onPress={takePicture} style={{ marginBottom: 40 }}>
+            Pic
+          </Button>
+          <Button icon={'camera'} onPress={pickImage} style={{ marginBottom: 40 }}>
+            Roll
+          </Button>
         </Camera>
-        {response && <Text>{response}test</Text>}
-        {image && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />}
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+  retakeButton: {
+    position: 'absolute',
+    bottom: 20,
+    backgroundColor: 'blue',
+    padding: 10,
+    borderRadius: 10,
   },
 });
-
 
 export default CameraComponent;
