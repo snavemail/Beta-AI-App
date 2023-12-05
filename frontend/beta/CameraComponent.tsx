@@ -3,20 +3,13 @@ import { View, Text, Image, StyleSheet, Platform } from 'react-native';
 import { Button } from 'react-native-paper';
 import { Camera } from 'expo-camera';
 import { TouchableOpacity } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 
 function CameraComponent() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const cameraRef = useRef<Camera | null>(null);
   const address = '10.0.0.184'
-
-  if (hasPermission === null) {
-    return <View><Text>Requesting camera permission...</Text></View>;
-  }
-
-  if (hasPermission === false) {
-    return <View><Text>No access to camera</Text></View>;
-  }
 
   useEffect(() => {
     (async () => {
@@ -25,6 +18,24 @@ function CameraComponent() {
     })();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      if (Platform.OS !== 'web') {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          alert('Sorry, we need camera roll permissions to make this work!');
+        }
+      }
+    })();
+  }, []);
+
+  if (hasPermission === null) {
+    return <View><Text>Requesting camera permission...</Text></View>;
+  }
+
+  if (hasPermission === false) {
+    return <View><Text>No access to camera</Text></View>;
+  }
 
   const takePicture = async () => {
     if (!cameraRef.current) {
@@ -66,9 +77,47 @@ function CameraComponent() {
     setImage(null);
   };
   
-  const pickImage = () => {
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 1,
+    });
 
-  }
+    console.log(result);
+
+    if (!result.canceled) {
+      const uri = (result.assets[0].uri)
+      const file = await fetch(uri);
+      const blob = await file.blob();
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result;
+        const formData = new FormData();
+        formData.append('image', base64 as string);
+    
+        fetch(`http://${address}:3000/predict`, {
+          method: 'POST',
+          body: formData,
+          headers: { 'Content-Type': "image/jpeg", },
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const timestamp = Date.now();
+          const url = `http://${address}:3000/get-image?timestamp=${timestamp}`
+          setImage(url)
+        })
+        .catch(error => {
+          console.error('Error sending image to server:', error);
+          setImage(uri);
+        });
+      };
+      reader.readAsDataURL(blob);
+    }
+  };
 
 
   return (
