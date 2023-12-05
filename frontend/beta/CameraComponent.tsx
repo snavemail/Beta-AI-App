@@ -4,12 +4,12 @@ import { IconButton, MD3Colors } from 'react-native-paper';
 import { Camera } from 'expo-camera';
 import { TouchableOpacity } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { PinchGestureHandler } from 'react-native-gesture-handler';
 
 function CameraComponent() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [image, setImage] = useState<string | null>(null);
-  const [cameraButtonDisabled, setCameraButtonDisabled] = useState<boolean>(false);
-  const [imageButtonDisabled, setImageButtonDisabled] = useState<boolean>(false);
+  const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
   const cameraRef = useRef<Camera | null>(null);
   const address = '10.0.0.184'
 
@@ -61,12 +61,12 @@ function CameraComponent() {
         const url = `http://${address}:3000/get-image?timestamp=${timestamp}`
         
         setImage(url);
-        setCameraButtonDisabled(false);
+        setButtonDisabled(false);
       })
       .catch(error => {
         console.error('Error sending image to server:', error);
         setImage(uri);
-        setCameraButtonDisabled(false);
+        setButtonDisabled(false);
       });
     };
     reader.readAsDataURL(blob);
@@ -82,7 +82,7 @@ function CameraComponent() {
       console.error('Camera not available');
       return;
     }
-    setCameraButtonDisabled(true);
+    setButtonDisabled(true);
     const { uri } = await cameraRef.current.takePictureAsync();
     processImage(uri);
   };
@@ -100,8 +100,7 @@ function CameraComponent() {
    * Disables camera button as well
    */
   const pickImage = async () => {
-    setCameraButtonDisabled(true);
-    setImageButtonDisabled(true);
+    setButtonDisabled(true);
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -113,8 +112,7 @@ function CameraComponent() {
       const uri = (result.assets[0].uri)
       await processImage(uri);
     }
-    setImageButtonDisabled(false);
-    setCameraButtonDisabled(false);
+    setButtonDisabled(false);
   };
 
 
@@ -128,13 +126,16 @@ function CameraComponent() {
           </TouchableOpacity>
         </View>
       ) : (
+        <View style={{ flex: 1 }}>
         <Camera ref={cameraRef} style={{ flex: 1 }}>
           <View style={{ flex: 1, backgroundColor: 'transparent', flexDirection: 'row' }} />
           <View style={styles.bottomBar}>
-            <IconButton icon={"image"} onPress={pickImage} iconColor={MD3Colors.neutral70} mode={"contained-tonal"} disabled={imageButtonDisabled}/>
-            <IconButton icon='camera' onPress={takePicture} iconColor={MD3Colors.neutral70} mode={"contained-tonal"} disabled={cameraButtonDisabled}/>
+            <IconButton icon={"image"} onPress={pickImage} iconColor={MD3Colors.neutral70} mode={"contained-tonal"} disabled={buttonDisabled}/>
+            <IconButton icon='camera' onPress={takePicture} iconColor={MD3Colors.neutral70} mode={"contained-tonal"} disabled={buttonDisabled}/>
           </View>
         </Camera>
+        
+        </View>
       )}
     </View>
   );
