@@ -18,7 +18,8 @@ export default function CameraComponent() {
   const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const cameraRef = useRef<Camera | null>(null);
-  const address = '10.110.228.58'
+  const address = '10.110.228.245'
+
 
   /**
    * Request access for camera
