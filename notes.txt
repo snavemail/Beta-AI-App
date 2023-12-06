@@ -1,0 +1,24 @@
+1. Define the problem
+State representation: Set of 5 tuples where each tuple maps a limb to a hold and finally a hip to a discrete location
+
+Limb is one of:
+1. LH
+2. RH
+3. LF
+4. RF
+5. hip
+
+Hold is one of:
+1. Rock
+2. Volume
+3. Wall
+
+Action representation: 
+1. A limb moves to another hold (ideally one it hasn't seen before, check in explored set)
+2. Flag left/right foot
+3. Mantle
+4. Drop left/right knee
+5. Bathang lol
+
+Cost function: dependent of difficulty of move
+
