@@ -27,8 +27,7 @@ def predict():
         results = Util.remove_edges(results)
         Util.disp_results(results, "detect")
 
-        processed_image_path = os.path.join('react_images/detect', 'result.jpg')
-        return send_file(processed_image_path, mimetype="image/jpeg")
+        return jsonify({"status": "success"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
