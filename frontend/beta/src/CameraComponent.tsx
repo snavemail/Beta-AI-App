@@ -81,10 +81,7 @@ export default function CameraComponent() {
         }
         const timestamp = Date.now();
         const url = `http://${address}:3000/get-image?timestamp=${timestamp}`
-
-        console.log(url)
         setImage(url);
-        console.log('set')
         setButtonDisabled(false);
         setIsLoading(false);
       })
@@ -156,7 +153,6 @@ export default function CameraComponent() {
         </View>
       ) : isLoading ? (
         <View style={styles.loadingView}>
-          <Text style={styles.loadingText}>Processing image</Text>
           <Indicator/>
         </View>
       )
@@ -193,7 +189,7 @@ const styles = StyleSheet.create({
   loadingView: {
     height: "100%",
     width: "100%",
-    backgroundColor: 'yellow',
+    backgroundColor: 'white',
     justifyContent: 'center',
     padding: 'auto'
   },
