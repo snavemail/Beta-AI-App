@@ -16,7 +16,7 @@ export default function CameraComponent() {
   const [image, setImage] = useState<string | null>(null);
   const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
   const cameraRef = useRef<Camera | null>(null);
-  const address = '10.110.228.58'
+  const address = '10.110.188.245'
 
   /**
    * Request access for camera
@@ -68,7 +68,7 @@ export default function CameraComponent() {
       const formData = new FormData();
       formData.append('image', base64 as string);
   
-      fetch(`http://${address}:3000/predict`, {
+      fetch(`http://${address}:3000/predict-difficulty`, {
         method: 'POST',
         body: formData,
         headers: { 'Content-Type': "image/jpeg", },
