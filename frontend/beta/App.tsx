@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import CameraComponent from './CameraComponent';
+import CameraComponent from './src/CameraComponent';
 
 
 export default function App() {
