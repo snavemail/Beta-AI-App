@@ -11,7 +11,7 @@ if plt != 'Windows': pathlib.WindowsPath = pathlib.PosixPath
 
 app = Flask(__name__)
 
-difficulty_classifier_model = YOLO('backend/models/classify/best.pt')
+difficulty_classifier_model = YOLO('backend/models/classify/classifyv2.pt')
 hold_detection_model = YOLO('backend/models/detect/detectv1.pt')
 
 # API endpoint for receiving images and returning predictions
@@ -49,16 +49,12 @@ def predict_difficulty():
         with open(os.path.join('backend/react_images/classify', 'image.jpg'), 'wb') as f:
             f.write(image_data)
 
-
         img = Util.get_image(os.path.join('backend/react_images/classify', 'image.jpg'))
         results = difficulty_classifier_model.predict(img)
         print('difficulty', Util.get_difficulty(results))
         Util.disp_results(results, "classify")
 
         return jsonify({"difficulty": Util.get_difficulty(results)})
-
-        # processed_image_path = os.path.join('react_images/classify', 'result.jpg')
-        # return send_file(processed_image_path, mimetype="image/jpeg")
         
     except Exception as e:
         print("Exception")
