@@ -30,7 +30,6 @@ def predict():
         img = Util.get_image(os.path.join('backend/react_images/detect', 'image.jpg'))
         results = hold_detection_model(img)
         results = Util.remove_edges(results)
-        print(results)
         Util.disp_results(results, "detect")
 
         return jsonify({"status": "success"})
@@ -51,7 +50,6 @@ def predict_difficulty():
 
         img = Util.get_image(os.path.join('backend/react_images/classify', 'image.jpg'))
         results = difficulty_classifier_model.predict(img)
-        print('difficulty', Util.get_difficulty(results))
         Util.disp_results(results, "classify")
 
         return jsonify({"difficulty": Util.get_difficulty(results)})
