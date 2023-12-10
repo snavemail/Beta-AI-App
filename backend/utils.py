@@ -44,5 +44,5 @@ def get_difficulty(results):
         if guesses[9] == max(guesses):
             return "tag"
         aggregate = (8 * guesses[2] + 5 * guesses[3] + 4 * guesses[4] + 9 * guesses[5] + 
-                     1 * guesses[6] + 7 * guesses[7] + 6 * guesses[8] + 10 * guesses[10] + 3 * guesses[11] + 2 * guesses[12]) 
+                     1 * guesses[6] + 7 * guesses[7] + 6 * guesses[8] + 10 * guesses[10] + 3 * guesses[11] + 2 * guesses[12]) / (guesses[2] + guesses[3] + guesses[4] + guesses[5] + guesses[6] + guesses[7] + guesses[8] + guesses[10] + guesses[11] + guesses[12])
         return float(aggregate)

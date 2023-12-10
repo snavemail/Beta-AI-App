@@ -52,6 +52,7 @@ def predict_difficulty():
         results = difficulty_classifier_model.predict(img)
         Util.disp_results(results, "classify")
 
+        print(Util.get_difficulty(results))
         return jsonify({"difficulty": Util.get_difficulty(results)})
         
     except Exception as e:
