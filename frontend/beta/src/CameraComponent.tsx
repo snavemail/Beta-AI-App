@@ -73,7 +73,7 @@ export default function CameraComponent() {
       fetch(`http://${address}:3000/predict`, {
         method: 'POST',
         body: formData,
-        headers: { 'Content-Type': "image/jpeg", },
+        headers: { 'Content-Type': 'image/jpeg', },
       })
       .then(response => {
         if (!response.ok) {
@@ -165,8 +165,8 @@ export default function CameraComponent() {
         <Camera ref={cameraRef} style={{ flex: 1 }}>
           <View style={{ flex: 1, backgroundColor: 'transparent', flexDirection: 'row' }} />
           <View style={styles.bottomBar}>
-            <IconButton icon={"image"} onPress={pickImage} iconColor={MD3Colors.neutral70} mode={"contained-tonal"} disabled={buttonDisabled}/>
-            <IconButton icon='camera' onPress={takePicture} iconColor={MD3Colors.neutral70} mode={"contained-tonal"} disabled={buttonDisabled}/>
+            <IconButton icon={'image'} onPress={pickImage} iconColor={MD3Colors.neutral70} mode={'contained-tonal'} disabled={buttonDisabled}/>
+            <IconButton icon='camera' onPress={takePicture} iconColor={MD3Colors.neutral70} mode={'contained-tonal'} disabled={buttonDisabled}/>
           </View>
         </Camera>
         
@@ -191,13 +191,13 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   loadingView: {
-    height: "100%",
-    width: "100%",
+    height: '100%',
+    width: '100%',
     backgroundColor: 'yellow',
     justifyContent: 'center',
     padding: 'auto'
   },
   loadingText: {
-    color: "white",
+    color: 'white',
   }
 });
