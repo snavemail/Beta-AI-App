@@ -39,8 +39,10 @@ def get_difficulty(results):
         guesses = r.probs.data
         if guesses[0] == max(guesses):
             return "bolt"
-        if guesses[8] == max(guesses):
+        if guesses[1] == max(guesses):
+            return "downclimb"
+        if guesses[9] == max(guesses):
             return "tag"
-        aggregate = (8 * guesses[1] + 5 * guesses[2] + 4 * guesses[3] + 9 * guesses[4] + 
-                     1 * guesses[5] + 7 * guesses[6] + 6 * guesses[7] + 10 * guesses[9] + 3 * guesses[10] + 2 * guesses[11]) 
+        aggregate = (8 * guesses[2] + 5 * guesses[3] + 4 * guesses[4] + 9 * guesses[5] + 
+                     1 * guesses[6] + 7 * guesses[7] + 6 * guesses[8] + 10 * guesses[10] + 3 * guesses[11] + 2 * guesses[12]) / (guesses[2] + guesses[3] + guesses[4] + guesses[5] + guesses[6] + guesses[7] + guesses[8] + guesses[10] + guesses[11] + guesses[12])
         return float(aggregate)
