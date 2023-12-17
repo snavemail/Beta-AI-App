@@ -1,4 +1,9 @@
-# climbing
+# Beta AI
+
+Beta AI is a React Native App that solves beta for you
+
+## Installation
+Clone the repository
 
 ## Steps to run
 - run npm install
