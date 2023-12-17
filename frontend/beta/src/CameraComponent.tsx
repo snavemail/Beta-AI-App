@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, Platform, Button } from 'react-native';
+import { View, Text, Image, StyleSheet, Platform, Dimensions } from 'react-native';
 import { IconButton, MD3Colors } from 'react-native-paper';
 import { Camera } from 'expo-camera';
 import { TouchableOpacity } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+// import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from 'expo-image-picker'
 import Indicator from './Indicator';
+import * as Permissions from 'expo-permissions';
+
 
 /**
  * Asks for camera and image library access
@@ -18,7 +21,7 @@ export default function CameraComponent() {
   const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const cameraRef = useRef<Camera | null>(null);
-  const address = '10.110.188.245'
+  const address = '10.0.0.153'
 
   /**
    * Request access for camera
@@ -54,6 +57,47 @@ export default function CameraComponent() {
     return <View><Text>No access to camera</Text></View>;
   }
 
+    /**
+   * Sends a fetch request to post the current image 
+   * Image is processed by the current uri, either from taking a photo
+   * or choosing a photo
+   * Then calls get request to receive the resulting image
+   * @param uri this is the uri that is used for the image source
+   */
+    const processImage = async (uri: any) => {
+      const file = await fetch(uri);
+      const blob = await file.blob();
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result;
+        const formData = new FormData();
+        formData.append('image', base64 as string);
+    
+        fetch(`http://${address}:3000/predict-difficulty`, {
+          method: 'POST',
+          body: formData,
+          headers: { 'Content-Type': 'image/jpeg', },
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const timestamp = Date.now();
+          const url = `http://${address}:3000/get-image?timestamp=${timestamp}`
+          setImage(url);
+          setButtonDisabled(false);
+          setIsLoading(false);
+        })
+        .catch(error => {
+          console.error('Error sending image to server:', error);
+          setImage(uri);
+          setButtonDisabled(false);
+          setIsLoading(false);
+        });
+      };
+      reader.readAsDataURL(blob);
+    }
+
   /**
    * Sends a fetch request to post the current image 
    * Image is processed by the current uri, either from taking a photo
@@ -61,16 +105,20 @@ export default function CameraComponent() {
    * Then calls get request to receive the resulting image
    * @param uri this is the uri that is used for the image source
    */
-  const processImage = async (uri: any) => {
+  const processRouteImage = async (uri: any) => {
     const file = await fetch(uri);
     const blob = await file.blob();
     const reader = new FileReader();
+    const hsvrList = [210, 10, 30, 30];
     reader.onloadend = () => {
       const base64 = reader.result;
       const formData = new FormData();
       formData.append('image', base64 as string);
+      formData.append('hsvr', JSON.stringify(hsvrList));
+
+      console.log(JSON.stringify(hsvrList));
   
-      fetch(`http://${address}:3000/predict-difficulty`, {
+      fetch(`http://${address}:3000/get-color-holds`, {
         method: 'POST',
         body: formData,
         headers: { 'Content-Type': 'image/jpeg', },
@@ -79,8 +127,15 @@ export default function CameraComponent() {
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        console.log(response.json())
+        response.json()
+        console.log('good')
+      })
+      .then(data => {
+        console.log('server response', data);
         const timestamp = Date.now();
-        const url = `http://${address}:3000/get-image?timestamp=${timestamp}`
+        const url = `http://${address}:3000/get-color-image?timestamp=${timestamp}`
+        console.log('url', url)
         setImage(url);
         setButtonDisabled(false);
         setIsLoading(false);
@@ -108,7 +163,7 @@ export default function CameraComponent() {
     setButtonDisabled(true);
     setIsLoading(true);
     const { uri } = await cameraRef.current.takePictureAsync();
-    processImage(uri);
+    processRouteImage(uri);
   };
 
   /**
@@ -135,18 +190,20 @@ export default function CameraComponent() {
 
     if (!result.canceled) {
       const uri = (result.assets[0].uri)
-      await processImage(uri);
+      await processRouteImage(uri);
+    } else {
+      setButtonDisabled(false);
+      setIsLoading(false);
     }
-    setButtonDisabled(false);
-    setIsLoading(false);
   };
 
-
+  const screenWidth = Dimensions.get('window').width / 2;
+  console.log('screenWidth', screenWidth);
   return (
     <View style={{ flex: 1 }}>
       {image ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} />
+          <Image source={{ uri: image }} style={{ width: screenWidth / 2}} />
           <TouchableOpacity onPress={retakePicture} style={styles.retakeButton}>
             <Text style={{ color: 'white', fontSize: 20 }}>Retake</Text>
           </TouchableOpacity>
