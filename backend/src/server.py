@@ -16,9 +16,12 @@ difficulty_classifier_model = YOLO("backend/models/classify/classifyv2.pt")
 hold_detection_model = YOLO("backend/models/detect/detectv1.pt")
 
 
-# API endpoint for receiving images and returning predictions
-@app.route("/predict", methods=["POST"])
-def predict():
+# API endpoint for receiving images and returning possible holds
+@app.route("/get-holds", methods=["POST"])
+def get_holds():
+    """
+    Takes in an image and returns all of the holds from the image
+    """
     try:
         if "image" not in request.form:
             raise ValueError("Missing 'image' in form data", request.form)
@@ -41,6 +44,9 @@ def predict():
 
 @app.route("/predict-difficulty", methods=["POST"])
 def predict_difficulty():
+    """
+    Takes in an image and returns the difficulty (1-10) of the hold
+    """
     try:
         if "image" not in request.form:
             raise ValueError("Missing 'image' in form data", request.form)
