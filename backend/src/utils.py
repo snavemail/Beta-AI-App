@@ -1,3 +1,4 @@
+import pathlib, platform
 from PIL import Image
 from ultralytics.engine.results import Boxes
 import cv2, math, os, numpy as np
@@ -7,9 +8,14 @@ from classes.State import State
 from copy import copy
 from ultralytics import YOLO
 
+plt = platform.system()
+if plt != "Windows":
+    pathlib.WindowsPath = pathlib.PosixPath
+if plt == "Windows":
+    pathlib.PosixPath = pathlib.WindowsPath
 
-detect_model = YOLO("../models/detect/detectv2.pt")
-classify_model = YOLO("../runs/classify/classifyv3.pt")
+detect_model = YOLO("backend/models/detect/detectv1.pt")
+classify_model = YOLO("backend/models/classify/classifyv3.pt")
 
 
 # Gets the image at the specified path as a numpy array
@@ -28,7 +34,7 @@ def run_model(model, path):
 
 
 # Displays the results of model(image)
-def disp_results(results):
+def disp_results(results, folder):
     """
     Displays the results in a file called results/results[index]
     results: results from model
@@ -36,16 +42,9 @@ def disp_results(results):
     for r in results:
         im_array = r.plot()  # plot a BGR numpy array of predictions
         im = Image.fromarray(im_array[..., ::-1])  # RGB PIL image
-
-        DIR = "../images/results"
-        len_folder = len(
-            [
-                name
-                for name in os.listdir(DIR)
-                if os.path.isfile(os.path.join(DIR, name))
-            ]
-        )
-        im.save(f"../images/results/results{len_folder}.jpg")  # save image
+        DIR = f"backend/react_images/{folder}"
+        im.save(f"{DIR}/result.jpg")  # save image
+        print("****Saved****")
 
 
 # Removes all bounding boxes in the results of model(image)
@@ -438,7 +437,6 @@ def get_results(results):
         if guesses[1] == max(guesses):
             return "downclimb"
         if guesses[9] == max(guesses):
-            print(guesses[9])
             return "tag"
         aggregate = (
             10 * guesses[2]
@@ -496,7 +494,6 @@ def get_ideal_rotation(image):
     for i in range(7):
         rot = rotate_image(image, (i * 45))
         res = run_model(classify_model, rot)
-        print("running")
         conf = get_confidence(res)
         if i == 0:
             diff = get_results(res)
@@ -509,11 +506,16 @@ def get_ideal_rotation(image):
 
 
 def get_holds_array(path, color, close):
-    results = run_model(path)
+    print("Done1")
+    results = run_model(detect_model, path)
+    print("Done2")
     results = remove_edges(results)
+    print("Done3")
     results = get_holds_near_color(results, color, close)
+    print("Done4")
     results = remove_bad_holds(results)
-    disp_results(results)
+    print("Done5")
+    disp_results(results, "route-finder")
     for r in results:
         holds = []
         boxes_data = np.array(r.boxes.xywh)
@@ -533,4 +535,5 @@ def get_holds_array(path, color, close):
                 )
             else:
                 print(f"FOUND {diff} at {boxes_data[i][0]}, {boxes_data[i][1]}")
+    holds.sort()
     return holds
