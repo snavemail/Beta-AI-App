@@ -24,16 +24,17 @@ I connected this to a React Native App made in expo so both Android and iPhone u
 ### Executing program
 
 To start both the server and the app:
-* `cd frontend/beta` and run
 ```
+cd frontend/beta
 npx expo start
+cd backend/server.py
 ```
-* `cd backend/server.py` and run this file
+and run this file
 * Make sure you edit the ipaddress in CameraComponent.tsx so that it calls the right server API
 * This ipaddress should be the same one you see in the browser in the flask server and also after running `npx expo start`
 
 ## Authors
-
+- [@LiamEvans](https://github.com/snavemail)
 - [@LiamLangert](https://github.com/LiamLangert)
 - [@DanielBlauvelt](https://github.com/danielblauvelt)
 
